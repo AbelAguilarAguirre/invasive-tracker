@@ -1,65 +1,141 @@
-import Image from "next/image";
+"use client";
+import { useState } from "react";
+import {
+    APIProvider,
+    Map,
+    AdvancedMarker,
+    InfoWindow,
+} from "@vis.gl/react-google-maps";
 
 export default function Home() {
-  return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex min-h-screen w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
+    const [markers, setMarkers] = useState<
+        { lat: number; lng: number; title: string; description: string }[]
+    >([]);
+    const [newMarker, setNewMarker] = useState<{
+        lat: number;
+        lng: number;
+    } | null>(null);
+    const [formData, setFormData] = useState({ title: "", description: "" });
+    const [selectedMarker, setSelectedMarker] = useState<number | null>(null);
+
+    const handleMapClick = (event: any) => {
+        const coord = event.detail.latLng;
+        if (!coord) return;
+
+        const lat = coord.lat;
+        const lng = coord.lng;
+
+        setNewMarker({ lat, lng });
+        console.log("New marker:", lat, lng);
+    };
+
+    const addMarker = () => {
+        if (!formData.title) {
+            alert("Please select a species!");
+            return;
+        }
+        if (newMarker) {
+            setMarkers([...markers, { ...newMarker, ...formData }]);
+            setNewMarker(null);
+            setFormData({ title: "", description: "" });
+        }
+    };
+
+    return (
+        <APIProvider apiKey="AIzaSyDHmpHCvCPlWpke08zPN1gvG2e93FWCuys">
+            <Map
+                mapId="10bf5ced29a53cc6356c8409"
+                style={{ width: "90vw", height: "100vh" }}
+                defaultCenter={{ lat: 22.0594, lng: -159.4995 }}
+                defaultZoom={11}
+                gestureHandling="greedy"
+                disableDefaultUI
+                onClick={handleMapClick}
             >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
-    </div>
-  );
+                {markers.map((marker, idx) => (
+                    <AdvancedMarker
+                        key={idx}
+                        position={{ lat: marker.lat, lng: marker.lng }}
+                        onClick={() => setSelectedMarker(idx)}
+                    />
+                ))}
+
+                {selectedMarker !== null && (
+                    <InfoWindow
+                        position={{
+                            lat: markers[selectedMarker].lat,
+                            lng: markers[selectedMarker].lng,
+                        }}
+                        onCloseClick={() => setSelectedMarker(null)}
+                    >
+                        <div>
+                            <h3>{markers[selectedMarker].title}</h3>
+                            <p>{markers[selectedMarker].description}</p>
+                        </div>
+                    </InfoWindow>
+                )}
+            </Map>
+
+            {newMarker && (
+                <div
+                    style={{
+                        position: "absolute",
+                        top: "10px",
+                        left: "10px",
+                        backgroundColor: "white",
+                        padding: "10px",
+                        zIndex: 1000,
+                        border: "1px solid black",
+                    }}
+                >
+                    <h3>Add Marker</h3>
+                    <select
+                        value={formData.title}
+                        onChange={(e) =>
+                            setFormData({ ...formData, title: e.target.value })
+                        }
+                        required
+                    >
+                        <option value="">Select an invasive species</option>
+                        <option value="Coconut Rhinoceros Beetle">
+                            Coconut Rhinoceros Beetle
+                        </option>
+                        <option value="Coffee Berry Borer (CBB)/ Coffee Leaf Rust (CLR)">
+                            Coffee Berry Borer (CBB)/ Coffee Leaf Rust (CLR)
+                        </option>
+                        <option value="Coqui">Coqui</option>
+                        <option value="Jackson's Chameleon">
+                            Jackson's Chameleon
+                        </option>
+                        <option value="Little Fire Ant">Little Fire Ant</option>
+                        <option value="Mongoose">Mongoose</option>
+                        <option value="Naio Thrips">Naio Thrips</option>
+                        <option value="Rose-ringed Parakeet">
+                            Rose-ringed Parakeet
+                        </option>
+                        <option value="Rapid ʻŌhiʻa Death (ROD)">
+                            Rapid ʻŌhiʻa Death (ROD)
+                        </option>
+                        <option value="Barbados Gooseberry">
+                            Barbados Gooseberry
+                        </option>
+                        <option value="Bingabing">Bingabing</option>
+                        <option value="Common Rush">Common Rush</option>
+                    </select>
+                    <input
+                        placeholder="Description"
+                        value={formData.description}
+                        onChange={(e) =>
+                            setFormData({
+                                ...formData,
+                                description: e.target.value,
+                            })
+                        }
+                    />
+                    <button onClick={addMarker}>Add Marker</button>
+                    <button onClick={() => setNewMarker(null)}>Cancel</button>
+                </div>
+            )}
+        </APIProvider>
+    );
 }
