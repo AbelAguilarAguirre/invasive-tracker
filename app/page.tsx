@@ -7,6 +7,10 @@ import {
     InfoWindow,
 } from "@vis.gl/react-google-maps";
 
+const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY as
+    | string
+    | undefined;
+
 export default function Home() {
     const [markers, setMarkers] = useState<
         { lat: number; lng: number; title: string; description: string }[]
@@ -17,6 +21,18 @@ export default function Home() {
     } | null>(null);
     const [formData, setFormData] = useState({ title: "", description: "" });
     const [selectedMarker, setSelectedMarker] = useState<number | null>(null);
+
+    if (!apiKey) {
+        return (
+            <div style={{ padding: 20 }}>
+                <h2>Missing Google Maps API key</h2>
+                <p>
+                    Set <code>NEXT_PUBLIC_GOOGLE_MAPS_API_KEY</code> in your
+                    <code>.env</code> and restart the dev server.
+                </p>
+            </div>
+        );
+    }
 
     const handleMapClick = (event: any) => {
         const coord = event.detail.latLng;
@@ -42,7 +58,7 @@ export default function Home() {
     };
 
     return (
-        <APIProvider apiKey="AIzaSyDHmpHCvCPlWpke08zPN1gvG2e93FWCuys">
+        <APIProvider apiKey={apiKey}>
             <Map
                 mapId="10bf5ced29a53cc6356c8409"
                 style={{ width: "90vw", height: "100vh" }}
@@ -86,9 +102,12 @@ export default function Home() {
                         padding: "10px",
                         zIndex: 1000,
                         border: "1px solid black",
+                        display: "flex",
+                        flexDirection: "column",
+                        gap: "10px",
+                        minWidth: "250px",
                     }}
                 >
-                    <h3>Add Marker</h3>
                     <select
                         value={formData.title}
                         onChange={(e) =>
