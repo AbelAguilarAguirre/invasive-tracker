@@ -249,199 +249,207 @@ export default function Home() {
     };
 
     return (
-        <APIProvider apiKey={apiKey}>
-            <Map
-                style={{ width: "100vw", height: "100vh" }}
-                defaultCenter={{ lat: 22.0594, lng: -159.4995 }}
-                defaultZoom={11}
-                gestureHandling="greedy"
-                disableDefaultUI
-                onClick={handleMapClick}
-                styles={mapStyles}
-            >
-                {markers.map((marker, idx) => (
-                    <Marker
-                        key={marker.id ?? idx}
-                        position={{ lat: marker.lat, lng: marker.lng }}
-                        onClick={() => setSelectedMarker(idx)}
-                    />
-                ))}
-
-                {selectedMarker !== null && markers[selectedMarker] && (
-                    <InfoWindow
-                        position={{
-                            lat: markers[selectedMarker].lat,
-                            lng: markers[selectedMarker].lng,
-                        }}
-                        onCloseClick={() => setSelectedMarker(null)}
-                    >
-                        <div style={{ color: "black" }}>
-                            <h3 style={{ margin: "0 0 8px 0" }}>
-                                {markers[selectedMarker].title}
-                            </h3>
-                            <p style={{ margin: "0 0 12px 0" }}>
-                                {markers[selectedMarker].description}
-                            </p>
-                            {markers[selectedMarker].imageUrl && (
-                                <img
-                                    src={markers[selectedMarker].imageUrl}
-                                    alt={markers[selectedMarker].title}
-                                    style={{
-                                        maxWidth: 200,
-                                        display: "block",
-                                        marginTop: 8,
-                                        borderRadius: "4px",
-                                    }}
-                                />
-                            )}
-                            <div style={{ marginTop: 12 }}>
-                                <button
-                                    onClick={() =>
-                                        deleteMarker(
-                                            markers[selectedMarker].id,
-                                            markers[selectedMarker].image_path
-                                        )
-                                    }
-                                    style={{
-                                        backgroundColor: "#f44336",
-                                        color: "white",
-                                        padding: "8px 16px",
-                                        border: "none",
-                                        borderRadius: "4px",
-                                        cursor: "pointer",
-                                    }}
-                                >
-                                    Delete
-                                </button>
-                            </div>
-                        </div>
-                    </InfoWindow>
-                )}
-            </Map>
-
-            {newMarker && (
-                <div
-                    style={{
-                        position: "absolute",
-                        top: "0px",
-                        left: "0px",
-                        backgroundColor: "white",
-                        padding: "10px",
-                        zIndex: 1000,
-                        border: "1px solid black",
-                        display: "flex",
-                        flexDirection: "column",
-                        gap: "10px",
-                        maxWidth: "450px",
-                        width: "100vw",
-                        color: "black",
-                    }}
+        <div>
+            <APIProvider apiKey={apiKey}>
+                <Map
+                    style={{ width: "100vw", height: "100vh" }}
+                    defaultCenter={{ lat: 22.0594, lng: -159.4995 }}
+                    defaultZoom={11}
+                    gestureHandling="greedy"
+                    disableDefaultUI
+                    onClick={handleMapClick}
+                    styles={mapStyles}
                 >
-                    <select
-                        value={formData.title}
-                        onChange={(e) =>
-                            setFormData({ ...formData, title: e.target.value })
-                        }
-                        required
+                    {markers.map((marker, idx) => (
+                        <Marker
+                            key={marker.id ?? idx}
+                            position={{ lat: marker.lat, lng: marker.lng }}
+                            onClick={() => setSelectedMarker(idx)}
+                        />
+                    ))}
+
+                    {selectedMarker !== null && markers[selectedMarker] && (
+                        <InfoWindow
+                            position={{
+                                lat: markers[selectedMarker].lat,
+                                lng: markers[selectedMarker].lng,
+                            }}
+                            onCloseClick={() => setSelectedMarker(null)}
+                        >
+                            <div style={{ color: "black" }}>
+                                <h3 style={{ margin: "0 0 8px 0" }}>
+                                    {markers[selectedMarker].title}
+                                </h3>
+                                <p style={{ margin: "0 0 12px 0" }}>
+                                    {markers[selectedMarker].description}
+                                </p>
+                                {markers[selectedMarker].imageUrl && (
+                                    <img
+                                        src={markers[selectedMarker].imageUrl}
+                                        alt={markers[selectedMarker].title}
+                                        style={{
+                                            maxWidth: 200,
+                                            display: "block",
+                                            marginTop: 8,
+                                            borderRadius: "4px",
+                                        }}
+                                    />
+                                )}
+                                <div style={{ marginTop: 12 }}>
+                                    <button
+                                        onClick={() =>
+                                            deleteMarker(
+                                                markers[selectedMarker].id,
+                                                markers[selectedMarker]
+                                                    .image_path
+                                            )
+                                        }
+                                        style={{
+                                            backgroundColor: "#f44336",
+                                            color: "white",
+                                            padding: "8px 16px",
+                                            border: "none",
+                                            borderRadius: "4px",
+                                            cursor: "pointer",
+                                        }}
+                                    >
+                                        Delete
+                                    </button>
+                                </div>
+                            </div>
+                        </InfoWindow>
+                    )}
+                </Map>
+
+                {newMarker && (
+                    <div
                         style={{
+                            position: "absolute",
+                            top: "0px",
+                            left: "0px",
                             backgroundColor: "white",
-                            color: "black",
-                            padding: "8px",
-                            border: "1px solid #000000ff",
-                            borderRadius: "4px",
-                        }}
-                    >
-                        <option value="">Select an invasive species</option>
-                        <option value="Coconut Rhinoceros Beetle">
-                            Coconut Rhinoceros Beetle
-                        </option>
-                        <option value="Coffee Berry Borer (CBB)/ Coffee Leaf Rust (CLR)">
-                            Coffee Berry Borer (CBB)/ Coffee Leaf Rust (CLR)
-                        </option>
-                        <option value="Coqui">Coqui</option>
-                        <option value="Jackson's Chameleon">
-                            Jackson's Chameleon
-                        </option>
-                        <option value="Little Fire Ant">Little Fire Ant</option>
-                        <option value="Mongoose">Mongoose</option>
-                        <option value="Naio Thrips">Naio Thrips</option>
-                        <option value="Rose-ringed Parakeet">
-                            Rose-ringed Parakeet
-                        </option>
-                        <option value="Rapid ʻŌhiʻa Death (ROD)">
-                            Rapid ʻŌhiʻa Death (ROD)
-                        </option>
-                        <option value="Barbados Gooseberry">
-                            Barbados Gooseberry
-                        </option>
-                        <option value="Bingabing">Bingabing</option>
-                        <option value="Common Rush">Common Rush</option>
-                    </select>
-                    <input
-                        placeholder="Description"
-                        value={formData.description}
-                        onChange={(e) =>
-                            setFormData({
-                                ...formData,
-                                description: e.target.value,
-                            })
-                        }
-                        style={{
-                            backgroundColor: "white",
-                            color: "black",
-                            padding: "8px",
-                            border: "1px solid #000000ff",
-                            borderRadius: "4px",
-                        }}
-                    />
-                    <input
-                        type="file"
-                        accept="image/*"
-                        style={{
-                            color: "black",
-                        }}
-                        onChange={async (e) => {
-                            const file = e.target.files?.[0];
-                            if (!file) return;
-                            const reader = new FileReader();
-                            reader.onload = () => {
-                                setFormData((prev) => ({
-                                    ...prev,
-                                    imageData: reader.result as string,
-                                    imageName: file.name,
-                                }));
-                            };
-                            reader.readAsDataURL(file);
-                        }}
-                    />
-                    <button
-                        onClick={addMarker}
-                        style={{
-                            backgroundColor: "#4caf4fc2",
-                            color: "black",
                             padding: "10px",
-                            border: "none",
-                            borderRadius: "4px",
-                            cursor: "pointer",
-                        }}
-                    >
-                        Add Marker
-                    </button>
-                    <button
-                        onClick={() => setNewMarker(null)}
-                        style={{
-                            backgroundColor: "#fa5f54e1",
+                            zIndex: 1000,
+                            border: "1px solid black",
+                            display: "flex",
+                            flexDirection: "column",
+                            gap: "10px",
+                            maxWidth: "450px",
+                            width: "100vw",
                             color: "black",
-                            padding: "10px",
-                            border: "none",
-                            borderRadius: "4px",
-                            cursor: "pointer",
                         }}
                     >
-                        Cancel
-                    </button>
-                </div>
-            )}
-        </APIProvider>
+                        <select
+                            value={formData.title}
+                            onChange={(e) =>
+                                setFormData({
+                                    ...formData,
+                                    title: e.target.value,
+                                })
+                            }
+                            required
+                            style={{
+                                backgroundColor: "white",
+                                color: "black",
+                                padding: "8px",
+                                border: "1px solid #000000ff",
+                                borderRadius: "4px",
+                            }}
+                        >
+                            <option value="">Select an invasive species</option>
+                            <option value="Coconut Rhinoceros Beetle">
+                                Coconut Rhinoceros Beetle
+                            </option>
+                            <option value="Coffee Berry Borer (CBB)/ Coffee Leaf Rust (CLR)">
+                                Coffee Berry Borer (CBB)/ Coffee Leaf Rust (CLR)
+                            </option>
+                            <option value="Coqui">Coqui</option>
+                            <option value="Jackson's Chameleon">
+                                Jackson's Chameleon
+                            </option>
+                            <option value="Little Fire Ant">
+                                Little Fire Ant
+                            </option>
+                            <option value="Mongoose">Mongoose</option>
+                            <option value="Naio Thrips">Naio Thrips</option>
+                            <option value="Rose-ringed Parakeet">
+                                Rose-ringed Parakeet
+                            </option>
+                            <option value="Rapid ʻŌhiʻa Death (ROD)">
+                                Rapid ʻŌhiʻa Death (ROD)
+                            </option>
+                            <option value="Barbados Gooseberry">
+                                Barbados Gooseberry
+                            </option>
+                            <option value="Bingabing">Bingabing</option>
+                            <option value="Common Rush">Common Rush</option>
+                        </select>
+                        <input
+                            placeholder="Description"
+                            value={formData.description}
+                            onChange={(e) =>
+                                setFormData({
+                                    ...formData,
+                                    description: e.target.value,
+                                })
+                            }
+                            style={{
+                                backgroundColor: "white",
+                                color: "black",
+                                padding: "8px",
+                                border: "1px solid #000000ff",
+                                borderRadius: "4px",
+                            }}
+                        />
+                        <input
+                            type="file"
+                            accept="image/*"
+                            style={{
+                                color: "black",
+                            }}
+                            onChange={async (e) => {
+                                const file = e.target.files?.[0];
+                                if (!file) return;
+                                const reader = new FileReader();
+                                reader.onload = () => {
+                                    setFormData((prev) => ({
+                                        ...prev,
+                                        imageData: reader.result as string,
+                                        imageName: file.name,
+                                    }));
+                                };
+                                reader.readAsDataURL(file);
+                            }}
+                        />
+                        <button
+                            onClick={addMarker}
+                            style={{
+                                backgroundColor: "#4caf4fc2",
+                                color: "black",
+                                padding: "10px",
+                                border: "none",
+                                borderRadius: "4px",
+                                cursor: "pointer",
+                            }}
+                        >
+                            Add Marker
+                        </button>
+                        <button
+                            onClick={() => setNewMarker(null)}
+                            style={{
+                                backgroundColor: "#fa5f54e1",
+                                color: "black",
+                                padding: "10px",
+                                border: "none",
+                                borderRadius: "4px",
+                                cursor: "pointer",
+                            }}
+                        >
+                            Cancel
+                        </button>
+                    </div>
+                )}
+            </APIProvider>
+        </div>
     );
 }
