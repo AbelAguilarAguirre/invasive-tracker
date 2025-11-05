@@ -275,9 +275,13 @@ export default function Home() {
                         }}
                         onCloseClick={() => setSelectedMarker(null)}
                     >
-                        <div>
-                            <h3>{markers[selectedMarker].title}</h3>
-                            <p>{markers[selectedMarker].description}</p>
+                        <div style={{ color: "black" }}>
+                            <h3 style={{ margin: "0 0 8px 0" }}>
+                                {markers[selectedMarker].title}
+                            </h3>
+                            <p style={{ margin: "0 0 12px 0" }}>
+                                {markers[selectedMarker].description}
+                            </p>
                             {markers[selectedMarker].imageUrl && (
                                 <img
                                     src={markers[selectedMarker].imageUrl}
@@ -286,10 +290,11 @@ export default function Home() {
                                         maxWidth: 200,
                                         display: "block",
                                         marginTop: 8,
+                                        borderRadius: "4px",
                                     }}
                                 />
                             )}
-                            <div style={{ marginTop: 8 }}>
+                            <div style={{ marginTop: 12 }}>
                                 <button
                                     onClick={() =>
                                         deleteMarker(
@@ -297,6 +302,14 @@ export default function Home() {
                                             markers[selectedMarker].image_path
                                         )
                                     }
+                                    style={{
+                                        backgroundColor: "#f44336",
+                                        color: "white",
+                                        padding: "8px 16px",
+                                        border: "none",
+                                        borderRadius: "4px",
+                                        cursor: "pointer",
+                                    }}
                                 >
                                     Delete
                                 </button>
@@ -320,6 +333,7 @@ export default function Home() {
                         flexDirection: "column",
                         gap: "10px",
                         minWidth: "250px",
+                        color: "black",
                     }}
                 >
                     <select
@@ -328,6 +342,13 @@ export default function Home() {
                             setFormData({ ...formData, title: e.target.value })
                         }
                         required
+                        style={{
+                            backgroundColor: "white",
+                            color: "black",
+                            padding: "8px",
+                            border: "1px solid #ccc",
+                            borderRadius: "4px",
+                        }}
                     >
                         <option value="">Select an invasive species</option>
                         <option value="Coconut Rhinoceros Beetle">
@@ -364,10 +385,20 @@ export default function Home() {
                                 description: e.target.value,
                             })
                         }
+                        style={{
+                            backgroundColor: "white",
+                            color: "black",
+                            padding: "8px",
+                            border: "1px solid #ccc",
+                            borderRadius: "4px",
+                        }}
                     />
                     <input
                         type="file"
                         accept="image/*"
+                        style={{
+                            color: "black",
+                        }}
                         onChange={async (e) => {
                             const file = e.target.files?.[0];
                             if (!file) return;
@@ -382,8 +413,32 @@ export default function Home() {
                             reader.readAsDataURL(file);
                         }}
                     />
-                    <button onClick={addMarker}>Add Marker</button>
-                    <button onClick={() => setNewMarker(null)}>Cancel</button>
+                    <button
+                        onClick={addMarker}
+                        style={{
+                            backgroundColor: "#4CAF50",
+                            color: "white",
+                            padding: "10px",
+                            border: "none",
+                            borderRadius: "4px",
+                            cursor: "pointer",
+                        }}
+                    >
+                        Add Marker
+                    </button>
+                    <button
+                        onClick={() => setNewMarker(null)}
+                        style={{
+                            backgroundColor: "#f44336",
+                            color: "white",
+                            padding: "10px",
+                            border: "none",
+                            borderRadius: "4px",
+                            cursor: "pointer",
+                        }}
+                    >
+                        Cancel
+                    </button>
                 </div>
             )}
         </APIProvider>
