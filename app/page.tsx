@@ -1,5 +1,6 @@
 "use client";
 import { useState, useEffect } from "react";
+import { supabase } from "../lib/supabaseClient";
 import {
     APIProvider,
     Map,
@@ -28,6 +29,7 @@ export default function Home() {
             title: string;
             description: string;
             imageUrl?: string;
+            image_path?: string;
         }[]
     >([]);
     const [newMarker, setNewMarker] = useState<{
@@ -57,12 +59,38 @@ export default function Home() {
     useEffect(() => {
         (async () => {
             try {
-                const res = await fetch("/api/markers");
-                if (res.ok) {
-                    const data = await res.json();
-                    setMarkers(data);
+                if (supabase) {
+                    const { data, error } = await supabase
+                        .from("markers")
+                        .select("*")
+                        .order("created_at", { ascending: true });
+                    if (error) {
+                        console.error("Supabase fetch error:", error);
+                    } else if (data) {
+                        const mapped = data.map((r: any) => ({
+                            id: r.id,
+                            lat: r.lat,
+                            lng: r.lng,
+                            title: r.title,
+                            description: r.description,
+                            image_path: r.image_path,
+                            imageUrl: r.image_path
+                                ? supabase.storage
+                                      .from("uploads")
+                                      .getPublicUrl(r.image_path).data
+                                      ?.publicUrl
+                                : undefined,
+                        }));
+                        setMarkers(mapped);
+                    }
                 } else {
-                    console.error("Failed to fetch markers");
+                    const res = await fetch("/api/markers");
+                    if (res.ok) {
+                        const data = await res.json();
+                        setMarkers(data);
+                    } else {
+                        console.error("Failed to fetch markers");
+                    }
                 }
             } catch (err) {
                 console.error(err);
@@ -71,14 +99,13 @@ export default function Home() {
     }, []);
 
     const handleMapClick = (event: any) => {
-        const coord = event.detail.latLng;
+        const coord = event.detail?.latLng;
         if (!coord) return;
 
         const lat = coord.lat;
         const lng = coord.lng;
 
         setNewMarker({ lat, lng });
-        console.log("New marker:", lat, lng);
     };
 
     const addMarker = async () => {
@@ -91,15 +118,64 @@ export default function Home() {
         const markerToSave = { ...newMarker, ...formData };
 
         try {
-            const res = await fetch("/api/markers", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(markerToSave),
-            });
+            if (supabase) {
+                // upload image if provided
+                let image_path: string | null = null;
+                if (formData.imageData) {
+                    const resp = await fetch(formData.imageData);
+                    const blob = await resp.blob();
+                    const filename = `${Date.now()}_${
+                        formData.imageName ?? "image"
+                    }`;
+                    const { error: upErr } = await supabase.storage
+                        .from("uploads")
+                        .upload(filename, blob as any);
+                    if (upErr) {
+                        console.error("Upload error:", upErr);
+                    } else {
+                        image_path = filename;
+                    }
+                }
 
-            if (res.ok) {
-                const saved = await res.json();
-                setMarkers((prev) => [...prev, saved]);
+                const { data, error } = await supabase
+                    .from("markers")
+                    .insert([
+                        {
+                            lat: markerToSave.lat,
+                            lng: markerToSave.lng,
+                            title: markerToSave.title,
+                            description: markerToSave.description,
+                            image_path,
+                        },
+                    ])
+                    .select()
+                    .single();
+
+                if (error) {
+                    console.error("Supabase insert error:", error);
+                    alert("Failed to save marker");
+                    return;
+                }
+
+                const imageUrl = data.image_path
+                    ? supabase.storage
+                          .from("uploads")
+                          .getPublicUrl(data.image_path).data?.publicUrl
+                    : undefined;
+
+                setMarkers((prev) => [
+                    ...prev,
+                    {
+                        id: data.id,
+                        lat: data.lat,
+                        lng: data.lng,
+                        title: data.title,
+                        description: data.description,
+                        imageUrl,
+                        image_path: data.image_path,
+                    },
+                ]);
+
                 setNewMarker(null);
                 setFormData({
                     title: "",
@@ -108,11 +184,66 @@ export default function Home() {
                     imageName: null,
                 });
             } else {
-                alert("Failed to save marker");
+                const res = await fetch("/api/markers", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(markerToSave),
+                });
+
+                if (res.ok) {
+                    const saved = await res.json();
+                    setMarkers((prev) => [...prev, saved]);
+                    setNewMarker(null);
+                    setFormData({
+                        title: "",
+                        description: "",
+                        imageData: null,
+                        imageName: null,
+                    });
+                } else {
+                    alert("Failed to save marker");
+                }
             }
         } catch (err) {
             console.error(err);
             alert("Failed to save marker");
+        }
+    };
+
+    const deleteMarker = async (id?: string, image_path?: string) => {
+        if (!id) return;
+        try {
+            if (supabase) {
+                const { error } = await supabase
+                    .from("markers")
+                    .delete()
+                    .eq("id", id);
+                if (error) {
+                    console.error("Supabase delete error:", error);
+                    alert("Failed to delete marker");
+                    return;
+                }
+                if (image_path) {
+                    await supabase.storage.from("uploads").remove([image_path]);
+                }
+                setMarkers((prev) => prev.filter((m) => m.id !== id));
+                setSelectedMarker(null);
+            } else {
+                const res = await fetch("/api/markers", {
+                    method: "DELETE",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ id }),
+                });
+                if (res.ok) {
+                    setMarkers((prev) => prev.filter((m) => m.id !== id));
+                    setSelectedMarker(null);
+                } else {
+                    alert("Failed to delete marker");
+                }
+            }
+        } catch (e) {
+            console.error(e);
+            alert("Failed to delete marker");
         }
     };
 
@@ -135,7 +266,7 @@ export default function Home() {
                     />
                 ))}
 
-                {selectedMarker !== null && (
+                {selectedMarker !== null && markers[selectedMarker] && (
                     <InfoWindow
                         position={{
                             lat: markers[selectedMarker].lat,
@@ -159,46 +290,12 @@ export default function Home() {
                             )}
                             <div style={{ marginTop: 8 }}>
                                 <button
-                                    onClick={async () => {
-                                        const id = markers[selectedMarker].id;
-                                        if (!id) {
-                                            alert(
-                                                "This marker cannot be deleted"
-                                            );
-                                            return;
-                                        }
-
-                                        try {
-                                            const res = await fetch(
-                                                "/api/markers",
-                                                {
-                                                    method: "DELETE",
-                                                    headers: {
-                                                        "Content-Type":
-                                                            "application/json",
-                                                    },
-                                                    body: JSON.stringify({
-                                                        id,
-                                                    }),
-                                                }
-                                            );
-                                            if (res.ok) {
-                                                setMarkers((prev) =>
-                                                    prev.filter(
-                                                        (m) => m.id !== id
-                                                    )
-                                                );
-                                                setSelectedMarker(null);
-                                            } else {
-                                                alert(
-                                                    "Failed to delete marker"
-                                                );
-                                            }
-                                        } catch (e) {
-                                            console.error(e);
-                                            alert("Failed to delete marker");
-                                        }
-                                    }}
+                                    onClick={() =>
+                                        deleteMarker(
+                                            markers[selectedMarker].id,
+                                            markers[selectedMarker].image_path
+                                        )
+                                    }
                                 >
                                     Delete
                                 </button>
