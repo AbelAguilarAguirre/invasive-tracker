@@ -323,8 +323,8 @@ export default function Home() {
                 <div
                     style={{
                         position: "absolute",
-                        top: "10px",
-                        left: "10px",
+                        top: "0px",
+                        left: "0px",
                         backgroundColor: "white",
                         padding: "10px",
                         zIndex: 1000,
@@ -332,7 +332,8 @@ export default function Home() {
                         display: "flex",
                         flexDirection: "column",
                         gap: "10px",
-                        minWidth: "250px",
+                        maxWidth: "450px",
+                        width: "100vw",
                         color: "black",
                     }}
                 >
@@ -346,7 +347,7 @@ export default function Home() {
                             backgroundColor: "white",
                             color: "black",
                             padding: "8px",
-                            border: "1px solid #ccc",
+                            border: "1px solid #000000ff",
                             borderRadius: "4px",
                         }}
                     >
@@ -389,7 +390,7 @@ export default function Home() {
                             backgroundColor: "white",
                             color: "black",
                             padding: "8px",
-                            border: "1px solid #ccc",
+                            border: "1px solid #000000ff",
                             borderRadius: "4px",
                         }}
                     />
@@ -416,8 +417,8 @@ export default function Home() {
                     <button
                         onClick={addMarker}
                         style={{
-                            backgroundColor: "#4CAF50",
-                            color: "white",
+                            backgroundColor: "#4caf4fc2",
+                            color: "black",
                             padding: "10px",
                             border: "none",
                             borderRadius: "4px",
@@ -429,8 +430,8 @@ export default function Home() {
                     <button
                         onClick={() => setNewMarker(null)}
                         style={{
-                            backgroundColor: "#f44336",
-                            color: "white",
+                            backgroundColor: "#fa5f54e1",
+                            color: "black",
                             padding: "10px",
                             border: "none",
                             borderRadius: "4px",
