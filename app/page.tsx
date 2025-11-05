@@ -74,12 +74,13 @@ export default function Home() {
                             title: r.title,
                             description: r.description,
                             image_path: r.image_path,
-                            imageUrl: r.image_path && supabase
-                                ? supabase.storage
-                                      .from("uploads")
-                                      .getPublicUrl(r.image_path).data
-                                      ?.publicUrl
-                                : undefined,
+                            imageUrl:
+                                r.image_path && supabase
+                                    ? supabase.storage
+                                          .from("uploads")
+                                          .getPublicUrl(r.image_path).data
+                                          ?.publicUrl
+                                    : undefined,
                         }));
                         setMarkers(mapped);
                     }
@@ -250,7 +251,7 @@ export default function Home() {
     return (
         <APIProvider apiKey={apiKey}>
             <Map
-                style={{ width: "90vw", height: "100vh" }}
+                style={{ width: "100vw", height: "100vh" }}
                 defaultCenter={{ lat: 22.0594, lng: -159.4995 }}
                 defaultZoom={11}
                 gestureHandling="greedy"
