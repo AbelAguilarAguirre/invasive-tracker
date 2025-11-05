@@ -74,7 +74,7 @@ export default function Home() {
                             title: r.title,
                             description: r.description,
                             image_path: r.image_path,
-                            imageUrl: r.image_path
+                            imageUrl: r.image_path && supabase
                                 ? supabase.storage
                                       .from("uploads")
                                       .getPublicUrl(r.image_path).data
