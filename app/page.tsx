@@ -1,11 +1,19 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
     APIProvider,
     Map,
-    AdvancedMarker,
+    Marker,
     InfoWindow,
 } from "@vis.gl/react-google-maps";
+
+const mapStyles = [
+    {
+        featureType: "poi",
+        elementType: "labels",
+        stylers: [{ visibility: "off" }],
+    },
+];
 
 const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY as
     | string
@@ -13,13 +21,25 @@ const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY as
 
 export default function Home() {
     const [markers, setMarkers] = useState<
-        { lat: number; lng: number; title: string; description: string }[]
+        {
+            id?: string;
+            lat: number;
+            lng: number;
+            title: string;
+            description: string;
+            imageUrl?: string;
+        }[]
     >([]);
     const [newMarker, setNewMarker] = useState<{
         lat: number;
         lng: number;
     } | null>(null);
-    const [formData, setFormData] = useState({ title: "", description: "" });
+    const [formData, setFormData] = useState<{
+        title: string;
+        description: string;
+        imageData?: string | null;
+        imageName?: string | null;
+    }>({ title: "", description: "", imageData: null, imageName: null });
     const [selectedMarker, setSelectedMarker] = useState<number | null>(null);
 
     if (!apiKey) {
@@ -34,6 +54,22 @@ export default function Home() {
         );
     }
 
+    useEffect(() => {
+        (async () => {
+            try {
+                const res = await fetch("/api/markers");
+                if (res.ok) {
+                    const data = await res.json();
+                    setMarkers(data);
+                } else {
+                    console.error("Failed to fetch markers");
+                }
+            } catch (err) {
+                console.error(err);
+            }
+        })();
+    }, []);
+
     const handleMapClick = (event: any) => {
         const coord = event.detail.latLng;
         if (!coord) return;
@@ -45,32 +81,55 @@ export default function Home() {
         console.log("New marker:", lat, lng);
     };
 
-    const addMarker = () => {
+    const addMarker = async () => {
         if (!formData.title) {
             alert("Please select a species!");
             return;
         }
-        if (newMarker) {
-            setMarkers([...markers, { ...newMarker, ...formData }]);
-            setNewMarker(null);
-            setFormData({ title: "", description: "" });
+        if (!newMarker) return;
+
+        const markerToSave = { ...newMarker, ...formData };
+
+        try {
+            const res = await fetch("/api/markers", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(markerToSave),
+            });
+
+            if (res.ok) {
+                const saved = await res.json();
+                setMarkers((prev) => [...prev, saved]);
+                setNewMarker(null);
+                setFormData({
+                    title: "",
+                    description: "",
+                    imageData: null,
+                    imageName: null,
+                });
+            } else {
+                alert("Failed to save marker");
+            }
+        } catch (err) {
+            console.error(err);
+            alert("Failed to save marker");
         }
     };
 
     return (
         <APIProvider apiKey={apiKey}>
             <Map
-                mapId="10bf5ced29a53cc6356c8409"
                 style={{ width: "90vw", height: "100vh" }}
                 defaultCenter={{ lat: 22.0594, lng: -159.4995 }}
                 defaultZoom={11}
                 gestureHandling="greedy"
                 disableDefaultUI
                 onClick={handleMapClick}
+                styles={mapStyles}
             >
                 {markers.map((marker, idx) => (
-                    <AdvancedMarker
-                        key={idx}
+                    <Marker
+                        key={marker.id ?? idx}
                         position={{ lat: marker.lat, lng: marker.lng }}
                         onClick={() => setSelectedMarker(idx)}
                     />
@@ -87,6 +146,63 @@ export default function Home() {
                         <div>
                             <h3>{markers[selectedMarker].title}</h3>
                             <p>{markers[selectedMarker].description}</p>
+                            {markers[selectedMarker].imageUrl && (
+                                <img
+                                    src={markers[selectedMarker].imageUrl}
+                                    alt={markers[selectedMarker].title}
+                                    style={{
+                                        maxWidth: 200,
+                                        display: "block",
+                                        marginTop: 8,
+                                    }}
+                                />
+                            )}
+                            <div style={{ marginTop: 8 }}>
+                                <button
+                                    onClick={async () => {
+                                        const id = markers[selectedMarker].id;
+                                        if (!id) {
+                                            alert(
+                                                "This marker cannot be deleted"
+                                            );
+                                            return;
+                                        }
+
+                                        try {
+                                            const res = await fetch(
+                                                "/api/markers",
+                                                {
+                                                    method: "DELETE",
+                                                    headers: {
+                                                        "Content-Type":
+                                                            "application/json",
+                                                    },
+                                                    body: JSON.stringify({
+                                                        id,
+                                                    }),
+                                                }
+                                            );
+                                            if (res.ok) {
+                                                setMarkers((prev) =>
+                                                    prev.filter(
+                                                        (m) => m.id !== id
+                                                    )
+                                                );
+                                                setSelectedMarker(null);
+                                            } else {
+                                                alert(
+                                                    "Failed to delete marker"
+                                                );
+                                            }
+                                        } catch (e) {
+                                            console.error(e);
+                                            alert("Failed to delete marker");
+                                        }
+                                    }}
+                                >
+                                    Delete
+                                </button>
+                            </div>
                         </div>
                     </InfoWindow>
                 )}
@@ -150,6 +266,23 @@ export default function Home() {
                                 description: e.target.value,
                             })
                         }
+                    />
+                    <input
+                        type="file"
+                        accept="image/*"
+                        onChange={async (e) => {
+                            const file = e.target.files?.[0];
+                            if (!file) return;
+                            const reader = new FileReader();
+                            reader.onload = () => {
+                                setFormData((prev) => ({
+                                    ...prev,
+                                    imageData: reader.result as string,
+                                    imageName: file.name,
+                                }));
+                            };
+                            reader.readAsDataURL(file);
+                        }}
                     />
                     <button onClick={addMarker}>Add Marker</button>
                     <button onClick={() => setNewMarker(null)}>Cancel</button>
