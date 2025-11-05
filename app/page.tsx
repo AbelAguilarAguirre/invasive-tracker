@@ -7,6 +7,7 @@ import {
     Marker,
     InfoWindow,
 } from "@vis.gl/react-google-maps";
+import Image from "next/image";
 
 const mapStyles = [
     {
@@ -250,6 +251,19 @@ export default function Home() {
 
     return (
         <div>
+            <Image
+                src="/logo.png"
+                alt="Invasive Species Tracker"
+                width={100}
+                height={100}
+                objectFit="cover"
+                style={{
+                    position: "absolute",
+                    top: "0px",
+                    left: "0px",
+                    zIndex: 1000,
+                }}
+            />
             <APIProvider apiKey={apiKey}>
                 <Map
                     style={{ width: "100vw", height: "100vh" }}
