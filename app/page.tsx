@@ -29,6 +29,7 @@ export default function Home() {
             lng: number;
             title: string;
             description: string;
+            observed_date?: string;
             imageUrl?: string;
             image_path?: string;
         }[]
@@ -37,12 +38,20 @@ export default function Home() {
         lat: number;
         lng: number;
     } | null>(null);
+    const today = new Date().toISOString().slice(0, 10);
     const [formData, setFormData] = useState<{
         title: string;
         description: string;
+        observed_date?: string | null;
         imageData?: string | null;
         imageName?: string | null;
-    }>({ title: "", description: "", imageData: null, imageName: null });
+    }>({
+        title: "",
+        description: "",
+        observed_date: today,
+        imageData: null,
+        imageName: null,
+    });
     const [selectedMarker, setSelectedMarker] = useState<number | null>(null);
 
     if (!apiKey) {
@@ -74,6 +83,7 @@ export default function Home() {
                             lng: r.lng,
                             title: r.title,
                             description: r.description,
+                            observed_date: r.observed_date,
                             image_path: r.image_path,
                             imageUrl:
                                 r.image_path && supabase
@@ -147,6 +157,7 @@ export default function Home() {
                             lng: markerToSave.lng,
                             title: markerToSave.title,
                             description: markerToSave.description,
+                            observed_date: markerToSave.observed_date,
                             image_path,
                         },
                     ])
@@ -173,6 +184,7 @@ export default function Home() {
                         lng: data.lng,
                         title: data.title,
                         description: data.description,
+                        observed_date: data.observed_date,
                         imageUrl,
                         image_path: data.image_path,
                     },
@@ -182,6 +194,7 @@ export default function Home() {
                 setFormData({
                     title: "",
                     description: "",
+                    observed_date: today,
                     imageData: null,
                     imageName: null,
                 });
@@ -199,6 +212,7 @@ export default function Home() {
                     setFormData({
                         title: "",
                         description: "",
+                        observed_date: today,
                         imageData: null,
                         imageName: null,
                     });
@@ -299,6 +313,21 @@ export default function Home() {
                                 <p style={{ margin: "0 0 12px 0" }}>
                                     {markers[selectedMarker].description}
                                 </p>
+                                {markers[selectedMarker].observed_date && (
+                                    <p
+                                        style={{
+                                            margin: "0 0 12px 0",
+                                            fontStyle: "italic",
+                                        }}
+                                    >
+                                        Observed:{" "}
+                                        {new Date(
+                                            markers[
+                                                selectedMarker
+                                            ].observed_date
+                                        ).toLocaleDateString()}
+                                    </p>
+                                )}
                                 {markers[selectedMarker].imageUrl && (
                                     <img
                                         src={markers[selectedMarker].imageUrl}
@@ -372,7 +401,9 @@ export default function Home() {
                                 borderRadius: "4px",
                             }}
                         >
-                            <option value="">Select an invasive species</option>
+                            <option value="">
+                                Select an invasive species:
+                            </option>
                             <option value="Coconut Rhinoceros Beetle">
                                 Coconut Rhinoceros Beetle
                             </option>
@@ -417,6 +448,28 @@ export default function Home() {
                                 borderRadius: "4px",
                             }}
                         />
+                        <label style={{ display: "block" }}>
+                            Observed date:
+                            <input
+                                type="date"
+                                value={formData.observed_date ?? ""}
+                                onChange={(e) =>
+                                    setFormData({
+                                        ...formData,
+                                        observed_date: e.target.value,
+                                    })
+                                }
+                                style={{
+                                    backgroundColor: "white",
+                                    color: "black",
+                                    padding: "8px",
+                                    border: "1px solid #000000ff",
+                                    borderRadius: "4px",
+                                    marginTop: 4,
+                                }}
+                            />
+                        </label>
+
                         <input
                             type="file"
                             accept="image/*"
