@@ -384,7 +384,7 @@ export default function Home() {
                             color: "black",
                         }}
                     >
-                        <h1>Report a Pest</h1>
+                        <h1 className="text-xl text-center">Report a Pest</h1>
                         <select
                             value={formData.title}
                             onChange={(e) =>
