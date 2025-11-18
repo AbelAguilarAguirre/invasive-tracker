@@ -432,7 +432,7 @@ export default function Home() {
                             <option value="Common Rush">Common Rush</option>
                         </select>
                         <input
-                            placeholder="Description"
+                            placeholder="Pest Description:"
                             value={formData.description}
                             onChange={(e) =>
                                 setFormData({
@@ -471,6 +471,7 @@ export default function Home() {
                         </label>
 
                         <input
+                            placeholder="Upload Image:"
                             type="file"
                             accept="image/*"
                             style={{
