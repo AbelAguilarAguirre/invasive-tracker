@@ -469,28 +469,30 @@ export default function Home() {
                                 }}
                             />
                         </label>
+                        <label>
+                            Upload Image:{" "}
+                            <input
+                                type="file"
+                                accept="image/*"
+                                style={{
+                                    color: "black",
+                                }}
+                                onChange={async (e) => {
+                                    const file = e.target.files?.[0];
+                                    if (!file) return;
+                                    const reader = new FileReader();
+                                    reader.onload = () => {
+                                        setFormData((prev) => ({
+                                            ...prev,
+                                            imageData: reader.result as string,
+                                            imageName: file.name,
+                                        }));
+                                    };
+                                    reader.readAsDataURL(file);
+                                }}
+                            />{" "}
+                        </label>
 
-                        <input
-                            placeholder="Upload Image:"
-                            type="file"
-                            accept="image/*"
-                            style={{
-                                color: "black",
-                            }}
-                            onChange={async (e) => {
-                                const file = e.target.files?.[0];
-                                if (!file) return;
-                                const reader = new FileReader();
-                                reader.onload = () => {
-                                    setFormData((prev) => ({
-                                        ...prev,
-                                        imageData: reader.result as string,
-                                        imageName: file.name,
-                                    }));
-                                };
-                                reader.readAsDataURL(file);
-                            }}
-                        />
                         <button
                             onClick={addMarker}
                             style={{
