@@ -384,7 +384,7 @@ export default function Home() {
                             color: "black",
                         }}
                     >
-                        <h1>Add a Marker</h1>
+                        <h1>Report a Pest</h1>
                         <select
                             value={formData.title}
                             onChange={(e) =>
